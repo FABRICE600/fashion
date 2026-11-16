@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Orivier Fashion Shoes Ltd | Thoughtful Fashion in Rwanda',
-  description: 'Shop considered leather shoes, everyday clothing, and fashion essentials. Express delivery across Rwanda from Orivier Fashion Shoes in Rubavu.',
+  title: 'Fashion Shoes Ltd | Thoughtful Fashion in Rwanda',
+  description: 'Shop considered leather shoes, everyday clothing, and fashion essentials. Express delivery across Rwanda from our fashion store in Rubavu.',
   generator: 'v0.app',
   icons: {
     icon: [
