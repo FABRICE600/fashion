@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { ArrowRight, Search, Sparkles, Heart, ShoppingBag, UserRound, MapPin, Phone, Globe2, Package, Truck, ShieldCheck, Menu, X, Plus, Minus, Star, SlidersHorizontal, Check } from 'lucide-react'
 
 type Product = { id: number; name: string; category: string; price: number; oldPrice?: number; image: string; tag?: string; rating: string }
-const products: Product[] = [
+const featuredProducts: Product[] = [
   { id: 1, name: 'The Oxford — Cognac', category: 'Shoes', price: 89000, image: 'photo-1614252369475-53112f4bbf8b', tag: 'BESTSELLER', rating: '4.9' },
   { id: 2, name: 'City Runner — Chalk', category: 'Shoes', price: 68000, oldPrice: 84000, image: 'photo-1542291026-7eec264c27ff', tag: '−19%', rating: '4.8' },
   { id: 3, name: 'Heritage Chelsea Boot', category: 'Shoes', price: 112000, image: 'photo-1638247025967-b4e38f787b76', rating: '4.9' },
@@ -14,6 +14,23 @@ const products: Product[] = [
   { id: 7, name: 'Cloud Foam Street Sneaker', category: 'Shoes', price: 59000, oldPrice: 74000, image: 'photo-1600185365483-26d7a4cc7519', tag: 'FLASH SALE', rating: '4.6' },
   { id: 8, name: 'Essential Cotton Hoodie', category: 'Clothing', price: 48000, image: 'photo-1556821840-3a63f95609a7', rating: '4.8' },
 ]
+const shoeStyles = ['Oxford', 'Chelsea Boot', 'Leather Loafer', 'Court Sneaker', 'Trail Runner', 'Derby', 'Slide Sandal', 'High-top Sneaker', 'Ballet Flat', 'Ankle Boot', 'Driving Moccasin', 'Canvas Low-top', 'Work Boot', 'Retro Runner']
+const clothingStyles = ['Straight Jean', 'Utility Jacket', 'Cotton Hoodie', 'Linen Shirt', 'Everyday Chino', 'Knit Sweater', 'Relaxed Tee', 'Cargo Trouser', 'Overshirt', 'Weekend Shorts', 'Ribbed Polo', 'Track Jacket', 'Denim Shirt', 'Lightweight Coat']
+const colorways = ['Cognac', 'Chalk', 'Onyx', 'Sand', 'Forest', 'Oxblood', 'Stone', 'Navy', 'Olive', 'Espresso', 'Rust', 'Cloud', 'Moss', 'Slate', 'Cream', 'Midnight', 'Taupe', 'Burgundy', 'Ash', 'Caramel', 'Indigo']
+const shoeImages = ['photo-1614252369475-53112f4bbf8b', 'photo-1542291026-7eec264c27ff', 'photo-1638247025967-b4e38f787b76', 'photo-1531310197839-ccf54634509e', 'photo-1600185365483-26d7a4cc7519']
+const clothingImages = ['photo-1542272604-787c3835535d', 'photo-1551028719-00167b16eac5', 'photo-1556821840-3a63f95609a7', 'photo-1521572163474-6864f9cf17ab', 'photo-1529139574466-a303027c1d8b']
+const generatedProducts: Product[] = Array.from({ length: 292 }, (_, index) => {
+  const category = index < 146 ? 'Shoes' : 'Clothing'
+  const categoryIndex = index % 146
+  const styles = category === 'Shoes' ? shoeStyles : clothingStyles
+  const color = colorways[Math.floor(categoryIndex / styles.length)]
+  const style = styles[categoryIndex % styles.length]
+  const images = category === 'Shoes' ? shoeImages : clothingImages
+  const basePrice = category === 'Shoes' ? 54000 : 32000
+  const price = basePrice + ((categoryIndex * 7919) % (category === 'Shoes' ? 69000 : 52000))
+  return { id: index + 9, name: `${style} — ${color}`, category, price, image: images[categoryIndex % images.length], rating: (4.5 + (categoryIndex % 5) / 10).toFixed(1), ...(categoryIndex % 11 === 0 ? { tag: 'NEW' } : {}) }
+})
+const products: Product[] = [...featuredProducts, ...generatedProducts]
 const imageUrl = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=760&q=85`
 const money = (value: number) => `RWF ${value.toLocaleString('en-US')}`
 
@@ -26,12 +43,17 @@ export function Storefront() {
   const [notice, setNotice] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [sort, setSort] = useState('Featured')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 12
   const filtered = useMemo(() => {
     const result = products.filter((product) => (category === 'All' || product.category === category) && `${product.name} ${product.category}`.toLowerCase().includes(query.toLowerCase()) && (modal !== 'wishlist' || wishlist.includes(product.id)))
     if (sort === 'Price: low to high') result.sort((a, b) => a.price - b.price)
     if (sort === 'Top rated') result.sort((a, b) => Number(b.rating) - Number(a.rating))
     return result
   }, [category, query, sort, modal, wishlist])
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const activePage = Math.min(currentPage, totalPages)
+  const pageProducts = filtered.slice((activePage - 1) * pageSize, activePage * pageSize)
   const addToBag = (id: number) => { setBag((current) => [...current, id]); setNotice('Added to your bag'); window.setTimeout(() => setNotice(''), 2200) }
   const scrollToShop = () => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })
 
@@ -52,9 +74,9 @@ export function Storefront() {
     <section className="category-section section-wrap" id="categories"><div className="section-heading"><div><span className="section-kicker">FIND YOUR FIT</span><h2>Shop by category</h2></div><a href="#shop">Explore all <ArrowRight size={15}/></a></div><div className="category-grid"><button className="category-card category-shoes" onClick={() => { setCategory('Shoes'); scrollToShop() }}><span>01 / THE COLLECTION</span><strong>New shoes.<br/>New perspective.</strong><small>SHOP SHOES <ArrowRight size={14}/></small></button><button className="category-card category-clothing" onClick={() => { setCategory('Clothing'); scrollToShop() }}><span>02 / EVERYDAY WEAR</span><strong>Off-duty<br/>essentials.</strong><small>SHOP CLOTHING <ArrowRight size={14}/></small></button><button className="category-card category-sale" onClick={() => { setQuery(''); setCategory('All'); scrollToShop() }}><span>03 / LIMITED TIME</span><strong>Good things<br/>on offer.</strong><small>SHOP THE SALE <ArrowRight size={14}/></small></button></div></section>
 
     <section className="shop-section section-wrap" id="shop"><div className="section-heading shop-heading"><div><span className="section-kicker">THE ORIVIER EDIT</span><h2>Considered essentials<span className="heading-period">.</span></h2><p>Pieces you’ll reach for, season after season.</p></div><div className="shop-controls"><div className="filter-pills">{['All', 'Shoes', 'Clothing'].map((item) => <button key={item} onClick={() => setCategory(item)} className={category === item ? 'filter-active' : ''}>{item}</button>)}</div><label className="sort-label"><SlidersHorizontal size={15}/><select aria-label="Sort products" value={sort} onChange={(e) => setSort(e.target.value)}><option>Featured</option><option>Price: low to high</option><option>Top rated</option></select></label></div></div>
-      <div className="product-grid">{filtered.map((product) => <article className="product-card" key={product.id}><div className="product-image"><img src={imageUrl(product.image)} alt={product.name} loading="lazy"/>{product.tag && <span className="product-tag">{product.tag}</span>}<button className={`favorite-button ${wishlist.includes(product.id) ? 'is-favorite' : ''}`} aria-label={wishlist.includes(product.id) ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => setWishlist((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])}><Heart size={17} fill={wishlist.includes(product.id) ? 'currentColor' : 'none'}/></button><button className="quick-add" onClick={() => addToBag(product.id)}>Quick add <Plus size={14}/></button></div><div className="product-info"><div className="product-title-row"><h3>{product.name}</h3><span className="rating"><Star size={12} fill="currentColor"/>{product.rating}</span></div><span className="product-category">{product.category === 'Shoes' ? 'Footwear' : 'Clothing'} · ORIVIER</span><div className="price-row"><strong>{money(product.price)}</strong>{product.oldPrice && <del>{money(product.oldPrice)}</del>}</div></div></article>)}</div>
+      <div className="catalog-count" aria-live="polite">Showing {filtered.length === 0 ? 0 : (activePage - 1) * pageSize + 1}–{Math.min(activePage * pageSize, filtered.length)} of {filtered.length} styles</div><div className="product-grid">{pageProducts.map((product) => <article className="product-card" key={product.id}><div className="product-image"><img src={imageUrl(product.image)} alt={product.name} loading="lazy"/>{product.tag && <span className="product-tag">{product.tag}</span>}<button className={`favorite-button ${wishlist.includes(product.id) ? 'is-favorite' : ''}`} aria-label={wishlist.includes(product.id) ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => setWishlist((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])}><Heart size={17} fill={wishlist.includes(product.id) ? 'currentColor' : 'none'}/></button><button className="quick-add" onClick={() => addToBag(product.id)}>Quick add <Plus size={14}/></button></div><div className="product-info"><div className="product-title-row"><h3>{product.name}</h3><span className="rating"><Star size={12} fill="currentColor"/>{product.rating}</span></div><span className="product-category">{product.category === 'Shoes' ? 'Footwear' : 'Clothing'} · ORIVIER</span><div className="price-row"><strong>{money(product.price)}</strong>{product.oldPrice && <del>{money(product.oldPrice)}</del>}</div></div></article>)}</div>
       {filtered.length === 0 && <div className="empty-state">{modal === 'wishlist' ? 'Your wishlist is waiting for a favorite.' : 'No pieces found. Try another search.'}</div>}
-      {modal !== 'wishlist' && <div className="shop-more"><button className="outline-button" onClick={() => { setQuery(''); setCategory('All') }}>View all products <ArrowRight size={15}/></button></div>}
+      {modal !== 'wishlist' && <><div className="shop-more"><button className="outline-button" onClick={() => { setQuery(''); setCategory('All'); setCurrentPage(1) }}>View all 300 products <ArrowRight size={15}/></button></div><nav className="catalog-pagination" aria-label="Product pages"><button className="page-button" aria-label="Previous page" disabled={activePage === 1} onClick={() => { setCurrentPage(activePage - 1); document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' }) }}>Previous</button><span>Page <strong>{activePage}</strong> of {totalPages}</span><button className="page-button" aria-label="Next page" disabled={activePage === totalPages} onClick={() => { setCurrentPage(activePage + 1); document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' }) }}>Next <ArrowRight size={14}/></button></nav></>}
     </section>
 
     <section className="editorial" id="editorial"><div className="editorial-image"/><div className="editorial-copy"><span className="section-kicker">A BETTER KIND OF EVERYDAY</span><h2>Good style<br/>goes places.</h2><p>From a meeting in Kigali to the long way home. Discover hardworking pieces, made for wherever the day takes you.</p><button className="text-link" onClick={scrollToShop}>Discover the collection <ArrowRight size={16}/></button></div></section>
