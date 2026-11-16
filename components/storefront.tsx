@@ -43,6 +43,7 @@ export function Storefront() {
   const [notice, setNotice] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [sort, setSort] = useState('Featured')
+  const [language, setLanguage] = useState<'English' | 'Kinyarwanda'>('English')
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 12
   const filtered = useMemo(() => {
@@ -59,7 +60,7 @@ export function Storefront() {
 
   return <main className="storefront">
     <div className="announcement"><span><Truck size={14}/> Express delivery across Rwanda <i>•</i> Rubavu · Kigali · Musanze</span><span className="announcement-right">TIN: 121396213 <i>│</i> <button onClick={() => setModal('track')}>Track order</button></span></div>
-    <div className="utility"><span><MapPin size={14}/> Rubavu: Zakiriyo, Western Province, Rwanda <b>│</b> <Phone size={13}/> +250 790 645 364 / +250 780 113 390</span><span><button className="lang active">◎ ENGLISH</button><button className="lang">KINYARWANDA</button></span></div>
+    <div className="utility"><span><MapPin size={14}/> Rubavu: Zakiriyo, Western Province, Rwanda <b>│</b> <Phone size={13}/> +250 790 645 364 / +250 780 113 390</span><span><button className={`lang ${language === 'English' ? 'active' : ''}`} aria-pressed={language === 'English'} onClick={() => { setLanguage('English'); setNotice('English selected.'); window.setTimeout(() => setNotice(''), 2200) }}>◎ ENGLISH</button><button className={`lang ${language === 'Kinyarwanda' ? 'active' : ''}`} aria-pressed={language === 'Kinyarwanda'} onClick={() => { setLanguage('Kinyarwanda'); setNotice('Ikinyarwanda cyatoranyijwe.'); window.setTimeout(() => setNotice(''), 2200) }}>KINYARWANDA</button></span></div>
     <header className="main-header">
       <button className="mobile-menu icon-button" aria-label="Open menu" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X/> : <Menu/>}</button>
       <a className="brand" href="#top"><span className="brand-mark">OFS</span><span><strong>ORIVIER FASHION SHOES <em>LTD</em></strong><small>Smart Fashion & Inventory • Rubavu, Rwanda</small></span></a>
